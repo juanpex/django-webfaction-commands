@@ -2,7 +2,7 @@
 from optparse import make_option
 
 from webfaction.conf import settings
-from webfaction.utils import email_valid
+from webfaction.utils import email_valid, append_to_option_list
 from webfaction.management.base import WFBaseCommand
 from webfaction.management.commands.wfmailbox import Command as WFMailBox
 
@@ -14,16 +14,16 @@ class Command(WFBaseCommand):
         make_option('--mailbox', action='store', dest='mailbox',
             help='Mailbox asociated with the email.'),
     )
-    option_list = WFBaseCommand.option_list + custom_option_list
-    
+    option_list = append_to_option_list(WFBaseCommand.option_list, custom_option_list)
+
     WFBaseCommand.messages.update({
         'email_empty': 'No email was suplied.',
         'email_invalid': 'Email "%s" is not valid.',
         'mailbox_empty': 'No mailbox was suplied.',
         'mailbox_invalid': 'Mailbox "%s" does not exist.',
         },)
-    
-    
+
+
     def create_email(self, email, mailbox):
         if not email_valid(email):
             self.machine.raise_error(self.messages['email_invalid'] % email)
@@ -32,12 +32,12 @@ class Command(WFBaseCommand):
             self.machine.raise_error(self.messages['command_fail'] % 'Unknown')
             return False
         return True
-        
+
     def handle(self, *args, **options):
         super(Command, self).handle(*args, **options)
         self.run(*args, **options)
-    
-    def run(self, *args, **options):
+
+    def get_related_options(self, **options):
         try:
             mailbox = options.get('mailbox', None)
             if mailbox is None or len(mailbox) == 0 or mailbox.startswith("-"):
@@ -45,10 +45,10 @@ class Command(WFBaseCommand):
                     mailbox = settings.WEBFACTION_MAILBOX
                 except:
                     mailbox = None
-                if mailbox is None:
-                    self.machine.raise_error(self.messages['mailbox_empty'])
-                    return
-            
+            if mailbox is None:
+                self.machine.raise_error(self.messages['mailbox_empty'])
+                return
+
             email = options.get('email', None)
             if email is None or len(email) == 0 or email.startswith("-"):
                 try:
@@ -58,11 +58,16 @@ class Command(WFBaseCommand):
                 if email is None:
                     self.machine.raise_error(self.messages['email_empty'])
                     return
-            
-            mbox = WFMailBox()
-            mbox.machine = self.machine
-            mbox.create_mailbox(mailbox, True)
-            self.create_email(email, mailbox)
+            return {'mailbox': mailbox, 'email': email}
         except Exception, error:
             self.machine.raise_error(self.messages['command_fail'] % str(error))
 
+    def run(self, *args, **options):
+        try:
+            conf = self.get_related_options(**options)
+            mbox = WFMailBox()
+            mbox.machine = self.machine
+            mbox.create_mailbox(conf['mailbox'], True)
+            self.create_email(conf['email'], conf['mailbox'])
+        except Exception, error:
+            self.machine.raise_error(self.messages['command_fail'] % str(error))
