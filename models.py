@@ -274,13 +274,15 @@ class WFMachine(object):
         self.raise_success('Mailbox "%s" was created.' % (name))
         return True
 
-    def system(self, cmd, raiseerror=True):
+    def system(self, cmd, raiseerror=True, showerror=True):
         self.check_connection()
         if not self.is_test:
             try:
                 self.server.system(self.user(), cmd)
             except xmlrpclib.Fault, error:
-                resp = self.raise_error('WebFaction Error >>> "%s".' % (error))
+                resp = 'WebFaction Error >>> "%s".' % (error)
+                if showerror:
+                    resp = self.raise_error(resp)
                 if raiseerror:
                     return resp
         self.raise_log('Executing "%s"' % cmd)

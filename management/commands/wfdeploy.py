@@ -40,32 +40,40 @@ class Command(WFBaseCommand):
 
     def run(self, *args, **options):
         conf = {}
+        if 'machine' in options:
+            self.machine = options['machine']
+        elif hasattr(self, 'machine'):
+            m = getattr(self, 'machine')
+            if m:
+                options['machine'] = m
+
+
         task = WFSubDomain()
-        if self.washandle and options.get('dosubdomain', False):
+        if self.washandle and (options.get('dosubdomain', False) or options.get('doall')):
             task.handle(*args, **options)
             options.update({'machine': task.machine})
         conf.update(task.get_related_options(**options))
 
         task = WFEmail()
-        if self.washandle and options.get('doemail', False):
+        if self.washandle and (options.get('doemail', False) or options.get('doall')):
             task.handle(*args, **options)
             options.update({'machine': task.machine})
         conf.update(task.get_related_options(**options))
 
         task = WFDjangoApp()
-        if self.washandle and options.get('dodjangoapp', False):
+        if self.washandle and (options.get('dodjangoapp', False) or options.get('doall')):
             apps = task.handle(*args, **options)
             options.update(apps)
             options.update({'machine': task.machine})
         conf.update(task.get_related_options(**options))
 
         task = WFDatabase()
-        if self.washandle and options.get('dodatabase', False):
+        if self.washandle and (options.get('dodatabase', False) or options.get('doall')):
             task.handle(*args, **options)
             options.update({'machine': task.machine})
         conf.update(task.get_related_options(**options))
         task = WFSetup()
-        if self.washandle and options.get('dosetup', False):
+        if self.washandle and (options.get('dosetup', False) or options.get('doall')):
             if 'djangosite' not in options:
                 task_apps = WFDjangoApp()
                 temp_options = dict(options)
