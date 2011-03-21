@@ -12,8 +12,10 @@ class Command(WFBaseCommand):
     option_list = append_to_option_list(WFBaseCommand.option_list, [])
     option_list = append_to_option_list(option_list, WFDeploy.option_list)
 
+    washandle = False
     def handle(self, *args, **options):
         super(Command, self).handle(*args, **options)
+        self.washandle = True
         self.run(*args, **options)
 
     def run(self, *args, **options):

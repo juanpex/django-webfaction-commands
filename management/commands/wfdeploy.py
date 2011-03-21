@@ -84,5 +84,6 @@ class Command(WFBaseCommand):
             options.update(conf)
             task.handle(*args, **options)
             options.update({'machine': task.machine})
-        conf.update(task.get_related_options(**options))
+        if self.washandle:
+            conf.update(task.get_related_options(**options))
         return conf

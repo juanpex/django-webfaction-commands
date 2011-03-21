@@ -41,6 +41,8 @@ class Command(WFBaseCommand):
         if not djangoadminmedia:
             self.machine.raise_error(self.messages['command_fail'] % 'Unknown on djangoadminmedia')
 
+        fullurl = fullurl.replace("http://","")
+        fullurl = fullurl.replace("https://","")
         if not self.machine.create_website(appname, [fullurl,], [djangosite, djangomedia, djangoadminmedia]):
             self.machine.raise_error(self.messages['command_fail'] % 'Unknown on website')
 

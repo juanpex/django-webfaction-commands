@@ -29,7 +29,7 @@ class Command(WFBaseCommand):
             self.machine.raise_error(self.messages['email_invalid'] % email)
             return False
         if not self.machine.create_email(email, mailbox):
-            self.machine.raise_error(self.messages['command_fail'] % 'Unknown')
+            #self.machine.raise_error(self.messages['command_fail'] % 'Unknown')
             return False
         return True
 

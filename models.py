@@ -185,7 +185,7 @@ class WFMachine(object):
         if dbdata:
             if self.safemode:
                 self.raise_log('Database "%s" was load.' % name)
-                return WFDatabase(dbdata.db_type, dbdata.name, None)
+                return WFDatabase(dbdata['db_type'], dbdata['name'], None)
             else:
                 return self.raise_error('The database "%s" already exists.' % name)
         if not engine or len(engine.replace(" ","")) <= 0:
@@ -243,6 +243,8 @@ class WFMachine(object):
             try:
                 self.server.create_email(self.user(), email_address, mailbox)
             except xmlrpclib.Fault, error:
+                if 'username: Value already exists' in unicode(error):
+                    return self.raise_error('The email "%s" already exists.' % (email_address))
                 return self.raise_error('WebFaction Error >>> "%s".' % (error))
         self.raise_success('Email address "%s" was created.' % (email_address))
         return True
@@ -365,6 +367,8 @@ class WFMachine(object):
                 self.server.create_mailbox(self.user(), name, True, False, 'Spam')
             self.raise_success('Mailbox "%s" was created.' % (name))
         except xmlrpclib.Fault, error:
+            if 'this name is already used by someone' in unicode(error):
+                return self.raise_error('The mailbox "%s" already exists.' % name)
             return self.raise_error('WebFaction Error >>> "%s".' % (error))
         return True
 

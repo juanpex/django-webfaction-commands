@@ -23,7 +23,7 @@ class Command(WFBaseCommand):
         aux_machine = self.machine
         aux_machine.safemode = safe
         if not aux_machine.create_mailbox(mailbox) and not safe:
-            aux_machine.raise_error(self.messages['command_fail'] % 'Unknown')
+            #aux_machine.raise_error(self.messages['command_fail'] % 'Unknown')
             return False
         return True
 
